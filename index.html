@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FIREWALL: Chronicles of the NetGuard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Scanline Effect -->
+    <div class="scanlines"></div>
+    
+    <!-- Particle Background -->
+    <canvas id="particle-canvas"></canvas>
+    
+    <!-- Main Container - Title Screen -->
+    <div class="game-container">
+        <div id="title-screen" class="screen active">
+            <div class="glitch-container">
+                <h1 class="game-title glitch" data-text="FIREWALL">FIREWALL</h1>
+            </div>
+            <p class="subtitle">Chronicles of the NetGuard</p>
+            <div class="title-decoration">
+                <span class="deco-line"></span>
+                <span class="deco-icon">◆</span>
+                <span class="deco-line"></span>
+            </div>
+            <p class="tagline">Train Your Mind. Protect Your Network. Defeat the Hackers.</p>
+            
+            <div class="title-menu">
+                <button class="cyber-btn primary" onclick="game.startNewGame()">
+                    <span class="btn-icon">▶</span>
+                    <span class="btn-text">NEW GAME</span>
+                </button>
+                <button class="cyber-btn" onclick="game.openModal('how-to-play-modal')">
+                    <span class="btn-icon">?</span>
+                    <span class="btn-text">HOW TO PLAY</span>
+                </button>
+                <button class="cyber-btn" onclick="game.loadGame()">
+                    <span class="btn-icon">↻</span>
+                    <span class="btn-text">CONTINUE</span>
+                </button>
+                <button class="cyber-btn" onclick="game.openModal('achievements-modal')">
+                    <span class="btn-icon">★</span>
+                    <span class="btn-text">ACHIEVEMENTS</span>
+                </button>
+            </div>
+            
+            <div class="version-info">v1.0 | Security Awareness Training</div>
+        </div>
+    </div>
+    
+    <!-- ========== GAME MODAL (Main Gameplay) ========== -->
+    <div class="modal-overlay game-modal-overlay" id="game-modal">
+        <div class="modal modal-game">
+            <!-- Game Modal Header -->
+            <div class="game-modal-header">
+                <div class="hud-left">
+                    <div class="player-info">
+                        <span class="player-avatar" id="hud-avatar">🛡️</span>
+                        <div class="player-details">
+                            <span class="player-name" id="hud-name">Agent</span>
+                            <span class="player-level">Lvl <span id="hud-level">1</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="hud-center">
+                    <div class="stat-bars">
+                        <div class="stat-bar-container">
+                            <span class="stat-label">🛡️</span>
+                            <div class="stat-bar security-bar">
+                                <div class="stat-fill" id="security-fill" style="width: 100%"></div>
+                            </div>
+                            <span class="stat-value" id="security-value">100</span>
+                        </div>
+                        <div class="stat-bar-container">
+                            <span class="stat-label">⚡</span>
+                            <div class="stat-bar xp-bar">
+                                <div class="stat-fill" id="xp-fill" style="width: 0%"></div>
+                            </div>
+                            <span class="stat-value" id="xp-value">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="hud-right">
+                    <div class="reputation-display">
+                        <span class="rep-icon">⭐</span>
+                        <span class="rep-value" id="rep-value">0</span>
+                    </div>
+                    <button class="help-btn" onclick="game.openModal('how-to-play-modal')" title="Help">?</button>
+                    <button class="menu-btn" onclick="game.toggleMenu()" title="Menu">☰</button>
+                </div>
+            </div>
+            
+            <!-- Game Content Area - switches between views -->
+            <div class="game-modal-body">
+                
+                <!-- Gameplay View -->
+                <div class="game-view active" id="gameplay-view">
+                    <!-- Chapter Banner -->
+                    <div class="chapter-banner" id="chapter-banner">
+                        <span class="chapter-number">CHAPTER 1</span>
+                        <span class="chapter-title">The Phishing Grounds</span>
+                    </div>
+                    
+                    <!-- Terminal -->
+                    <div class="terminal-container">
+                        <div class="terminal-header">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                            <span class="terminal-title">NETGUARD TERMINAL</span>
+                        </div>
+                        <div class="terminal-body" id="terminal-output"></div>
+                    </div>
+                    
+                    <!-- Scenario -->
+                    <div class="scenario-container" id="scenario-container">
+                        <div class="scenario-header">
+                            <span class="scenario-type" id="scenario-type">INCOMING THREAT</span>
+                            <span class="scenario-difficulty" id="scenario-difficulty">⚠️ MEDIUM</span>
+                        </div>
+                        <div class="scenario-content" id="scenario-content"></div>
+                    </div>
+                    
+                    <!-- Choices -->
+                    <div class="choices-container" id="choices-container"></div>
+                    
+                    <!-- Result -->
+                    <div class="result-container" id="result-container"></div>
+                </div>
+                
+                <!-- Boss Battle View -->
+                <div class="game-view" id="boss-view">
+                    <div class="boss-arena">
+                        <div class="boss-display">
+                            <div class="boss-avatar" id="boss-avatar">👤</div>
+                            <div class="boss-info">
+                                <span class="boss-name" id="boss-name">UNKNOWN</span>
+                                <span class="boss-title" id="boss-title">Threat Actor</span>
+                            </div>
+                            <div class="boss-health-container">
+                                <div class="boss-health-bar">
+                                    <div class="boss-health-fill" id="boss-health-fill" style="width: 100%"></div>
+                                </div>
+                                <span class="boss-health-text" id="boss-health-text">100/100</span>
+                            </div>
+                        </div>
+                        <div class="battle-dialogue" id="battle-dialogue"></div>
+                        <div class="battle-scenario" id="battle-scenario"></div>
+                        <div class="battle-choices" id="battle-choices"></div>
+                    </div>
+                </div>
+                
+                <!-- Victory View -->
+                <div class="game-view" id="victory-view">
+                    <div class="victory-content">
+                        <div class="victory-icon">🏆</div>
+                        <h2 class="victory-title">MISSION COMPLETE</h2>
+                        <p class="victory-subtitle" id="victory-message">You've successfully defended against the threat!</p>
+                        <div class="victory-stats">
+                            <div class="victory-stat">
+                                <span class="vs-label">XP Earned</span>
+                                <span class="vs-value" id="victory-xp">+0</span>
+                            </div>
+                            <div class="victory-stat">
+                                <span class="vs-label">Reputation</span>
+                                <span class="vs-value" id="victory-rep">+0</span>
+                            </div>
+                            <div class="victory-stat">
+                                <span class="vs-label">Security</span>
+                                <span class="vs-value" id="victory-security">100%</span>
+                            </div>
+                        </div>
+                        <div class="victory-lessons" id="victory-lessons"></div>
+                        <button class="cyber-btn primary large" onclick="game.continueAfterVictory()">
+                            <span class="btn-text">CONTINUE</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Game Over View -->
+                <div class="game-view" id="gameover-view">
+                    <div class="gameover-content">
+                        <div class="gameover-icon">💀</div>
+                        <h2 class="gameover-title glitch" data-text="BREACH DETECTED">BREACH DETECTED</h2>
+                        <p class="gameover-message">Your organization's security has been compromised.</p>
+                        <div class="gameover-stats">
+                            <p>You reached: <span class="highlight">Chapter <span id="go-chapter">1</span></span></p>
+                            <p>Final Score: <span class="highlight" id="go-score">0</span></p>
+                        </div>
+                        <div class="gameover-tip">
+                            <h4>💡 Security Tip</h4>
+                            <p id="gameover-tip-text">Always verify unexpected requests through official channels.</p>
+                        </div>
+                        <div class="gameover-buttons">
+                            <button class="cyber-btn primary" onclick="game.restartFromCheckpoint()">
+                                <span class="btn-text">TRY AGAIN</span>
+                            </button>
+                            <button class="cyber-btn" onclick="game.quitToTitle()">
+                                <span class="btn-text">MAIN MENU</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Game Complete View -->
+                <div class="game-view" id="complete-view">
+                    <div class="complete-content">
+                        <div class="complete-icon">🎖️</div>
+                        <h2 class="complete-title">CONGRATULATIONS, AGENT!</h2>
+                        <p class="complete-subtitle">You have successfully completed all training missions and defeated SHADOWBYTE!</p>
+                        <div class="complete-message">
+                            <p>You are now a certified NetGuard defender. Remember to apply these lessons in your daily digital life!</p>
+                        </div>
+                        <button class="cyber-btn primary large" onclick="game.showFinalReport()">
+                            <span class="btn-text">VIEW FULL REPORT</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Final Report View -->
+                <div class="game-view" id="report-view">
+                    <div class="report-content">
+                        <div class="report-header">
+                            <h2>📋 SECURITY AWARENESS ASSESSMENT REPORT</h2>
+                            <p class="report-date" id="report-date"></p>
+                        </div>
+                        
+                        <div class="report-body" id="report-body">
+                            <!-- Generated report content goes here -->
+                        </div>
+                        
+                        <div class="report-footer">
+                            <button class="cyber-btn" onclick="game.printReport()">
+                                <span class="btn-text">🖨️ PRINT REPORT</span>
+                            </button>
+                            <button class="cyber-btn primary" onclick="game.quitToTitle()">
+                                <span class="btn-text">FINISH</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- In-Game Menu Overlay -->
+            <div class="game-menu-overlay" id="game-menu">
+                <div class="game-menu">
+                    <h3>MISSION CONTROL</h3>
+                    <button class="menu-option" onclick="game.saveGame()">💾 Save Progress</button>
+                    <button class="menu-option" onclick="game.openModal('stats-modal'); game.toggleMenu()">📊 View Stats</button>
+                    <button class="menu-option" onclick="game.openModal('how-to-play-modal'); game.toggleMenu()">📖 Training Manual</button>
+                    <button class="menu-option" onclick="game.toggleSound()">🔊 Sound: <span id="sound-status">ON</span></button>
+                    <button class="menu-option danger" onclick="game.quitToTitle()">🚪 Quit to Title</button>
+                    <button class="menu-close" onclick="game.toggleMenu()">RESUME</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ========== OTHER MODALS ========== -->
+    
+    <!-- How To Play Modal -->
+    <div class="modal-overlay" id="how-to-play-modal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h2><span class="header-icon">?</span> TRAINING MANUAL</h2>
+                <button class="modal-close-btn" onclick="game.closeModal('how-to-play-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="manual-tabs">
+                    <button class="tab-btn active" onclick="game.switchTab('mission', this)">Mission</button>
+                    <button class="tab-btn" onclick="game.switchTab('gameplay', this)">Gameplay</button>
+                    <button class="tab-btn" onclick="game.switchTab('stats', this)">Stats</button>
+                    <button class="tab-btn" onclick="game.switchTab('threats', this)">Threats</button>
+                    <button class="tab-btn" onclick="game.switchTab('tips', this)">Tips</button>
+                </div>
+                
+                <div class="tab-content active" id="tab-mission">
+                    <h3><span class="section-icon">◈</span> MISSION BRIEFING</h3>
+                    <p>Welcome, recruit. You've been selected to join <span class="highlight">NETGUARD</span>, an elite cybersecurity defense unit.</p>
+                    <p>The digital world is under siege by a criminal syndicate known as <span class="highlight text-danger">SHADOWBYTE</span>.</p>
+                    <p>Your mission: protect innocent users and organizations from their attacks.</p>
+                </div>
+                
+                <div class="tab-content" id="tab-gameplay">
+                    <h3><span class="section-icon">◈</span> HOW TO PLAY</h3>
+                    <ul class="manual-list">
+                        <li><span class="list-marker">→</span> Read each scenario carefully - attackers hide in the details</li>
+                        <li><span class="list-marker">→</span> Choose your response (A/B/C/D keys work too!)</li>
+                        <li><span class="list-marker">→</span> Correct decisions increase your <span class="stat-highlight xp">XP</span> and <span class="stat-highlight rep">Reputation</span></li>
+                        <li><span class="list-marker">→</span> Wrong choices damage your <span class="stat-highlight sec">Security Score</span></li>
+                        <li><span class="list-marker">→</span> Defeat chapter bosses to progress</li>
+                        <li><span class="list-marker">→</span> Security Score hits 0 = Game Over!</li>
+                    </ul>
+                </div>
+                
+                <div class="tab-content" id="tab-stats">
+                    <h3><span class="section-icon">◈</span> YOUR STATS</h3>
+                    <div class="stats-explanation">
+                        <div class="stat-card">
+                            <div class="stat-icon-box security">🛡️</div>
+                            <div class="stat-info">
+                                <h4>SECURITY SCORE</h4>
+                                <p>Your organization's security health. Reach 0 and you're breached!</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon-box xp">⚡</div>
+                            <div class="stat-info">
+                                <h4>EXPERIENCE (XP)</h4>
+                                <p>Earned by making correct decisions. Level up!</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon-box rep">⭐</div>
+                            <div class="stat-info">
+                                <h4>REPUTATION</h4>
+                                <p>Your standing in the cybersecurity community.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="tab-threats">
+                    <h3><span class="section-icon">◈</span> THREAT TYPES</h3>
+                    <div class="threat-grid">
+                        <div class="threat-card"><span class="threat-icon">📧</span><span>Phishing</span></div>
+                        <div class="threat-card"><span class="threat-icon">🎭</span><span>Social Engineering</span></div>
+                        <div class="threat-card"><span class="threat-icon">🔑</span><span>Credential Theft</span></div>
+                        <div class="threat-card"><span class="threat-icon">💀</span><span>Malware</span></div>
+                        <div class="threat-card"><span class="threat-icon">🔗</span><span>Suspicious Links</span></div>
+                        <div class="threat-card"><span class="threat-icon">📱</span><span>SMS Scams</span></div>
+                        <div class="threat-card"><span class="threat-icon">🚪</span><span>Physical Security</span></div>
+                        <div class="threat-card"><span class="threat-icon">💰</span><span>Ransomware</span></div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="tab-tips">
+                    <h3><span class="section-icon">◈</span> PRO TIPS</h3>
+                    <div class="tips-container">
+                        <div class="tip"><span class="tip-number">01</span><p>Always verify sender addresses - attackers use lookalike domains</p></div>
+                        <div class="tip"><span class="tip-number">02</span><p>Urgency is a red flag - real IT never threatens immediate deletion</p></div>
+                        <div class="tip"><span class="tip-number">03</span><p>When in doubt, verify through official channels</p></div>
+                        <div class="tip"><span class="tip-number">04</span><p>MFA is your best friend - enable it everywhere</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cyber-btn primary" onclick="game.closeModal('how-to-play-modal')">GOT IT!</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Character Creation Modal -->
+    <div class="modal-overlay" id="character-modal">
+        <div class="modal modal-md">
+            <div class="modal-header">
+                <h2><span class="header-icon">👤</span> AGENT REGISTRATION</h2>
+            </div>
+            <div class="modal-body">
+                <div class="creation-content">
+                    <div class="name-section">
+                        <label for="agent-name">YOUR NAME</label>
+                        <input type="text" id="agent-name" maxlength="20" placeholder="Enter your name..." autocomplete="off">
+                    </div>
+                    
+                    <div class="role-section">
+                        <label>SELECT YOUR ROLE</label>
+                        <p class="role-hint">Choose the role that best matches your job function. Training scenarios will be tailored to your responsibilities.</p>
+                        <div class="role-options">
+                            <div class="role-card selected" onclick="game.selectRole('employee', this)">
+                                <span class="role-icon">👤</span>
+                                <span class="role-name">Employee</span>
+                                <span class="role-desc">General staff member</span>
+                            </div>
+                            <div class="role-card" onclick="game.selectRole('manager', this)">
+                                <span class="role-icon">👔</span>
+                                <span class="role-name">Manager</span>
+                                <span class="role-desc">Team lead / Supervisor</span>
+                            </div>
+                            <div class="role-card" onclick="game.selectRole('executive', this)">
+                                <span class="role-icon">🎯</span>
+                                <span class="role-name">Executive</span>
+                                <span class="role-desc">C-Suite / Director</span>
+                            </div>
+                            <div class="role-card" onclick="game.selectRole('helpdesk', this)">
+                                <span class="role-icon">🎧</span>
+                                <span class="role-name">IT Help Desk</span>
+                                <span class="role-desc">IT Support staff</span>
+                            </div>
+                            <div class="role-card" onclick="game.selectRole('analyst', this)">
+                                <span class="role-icon">🔍</span>
+                                <span class="role-name">Security Analyst</span>
+                                <span class="role-desc">SOC / Threat analyst</span>
+                            </div>
+                            <div class="role-card" onclick="game.selectRole('engineer', this)">
+                                <span class="role-icon">⚙️</span>
+                                <span class="role-name">Security Engineer</span>
+                                <span class="role-desc">SecOps / Infrastructure</span>
+                            </div>
+                            <div class="role-card" onclick="game.selectRole('responder', this)">
+                                <span class="role-icon">🚨</span>
+                                <span class="role-name">Incident Responder</span>
+                                <span class="role-desc">IR / Forensics team</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cyber-btn" onclick="game.closeModal('character-modal')">CANCEL</button>
+                <button class="cyber-btn primary" onclick="game.confirmCharacter()">
+                    <span class="btn-icon">✓</span>
+                    <span class="btn-text">BEGIN TRAINING</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Achievements Modal -->
+    <div class="modal-overlay" id="achievements-modal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h2><span class="header-icon">★</span> ACHIEVEMENTS</h2>
+                <button class="modal-close-btn" onclick="game.closeModal('achievements-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="achievements-grid" id="achievements-grid"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="cyber-btn primary" onclick="game.closeModal('achievements-modal')">CLOSE</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Modal -->
+    <div class="modal-overlay" id="stats-modal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h2><span class="header-icon">📊</span> AGENT STATISTICS</h2>
+                <button class="modal-close-btn" onclick="game.closeModal('stats-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="stats-grid" id="stats-grid"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="cyber-btn primary" onclick="game.closeModal('stats-modal')">CLOSE</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Toast -->
+    <div class="toast-container" id="toast-container"></div>
+    
+    <script src="game.js"></script>
+    <script>
+        // Wait for everything to load
+        window.addEventListener('load', function() {
+            if (typeof CyberGuardGame === 'undefined') {
+                console.error('CyberGuardGame class not found. Check if game.js loaded correctly.');
+                return;
+            }
+            if (typeof game === 'undefined' || !game) {
+                console.log('Creating game instance...');
+                window.game = new CyberGuardGame();
+            }
+        });
+    </script>
+</body>
+</html>
